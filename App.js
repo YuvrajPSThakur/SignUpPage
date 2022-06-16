@@ -7,53 +7,37 @@
  */
 
 import React from 'react';
-import type {Node} from 'react';
+import {Formik} from 'formik';
+import * as yup from 'yup';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   useColorScheme,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-const Section = ({children, title}): Node => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const loginValidationSchema = yup.object().shape({
+    email: yup
+      .string()
+      .email('Please enter valid email')
+      .required('Email Address is Required'),
+    password: yup
+      .string()
+      .min(8, ({min}) => `Password must be at least ${min} characters`)
+      .required('Password is required'),
+  });
+  const handleFormSubmit = values => {
+    console.log(values);
+  };
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -65,26 +49,50 @@ const App: () => Node = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+        <Formik
+          initialValues={{email: '', password: ''}}
+          onSubmit={values => handleFormSubmit(values)}
+          validationSchema={loginValidationSchema}>
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            isValid,
+          }) => (
+            <View>
+              <Text style={styles.sectionContainer}>Log in</Text>
+              <TextInput
+                style={styles.input}
+                onChangeText={handleChange('email')}
+                value={values.email}
+                placeholder="Enter your email"
+              />
+              {errors.email && (
+                <Text style={styles.errorMessage}>{errors.email}</Text>
+              )}
+              <TextInput
+                style={styles.input}
+                onChangeText={handleChange('password')}
+                secureTextEntry={true}
+                value={values.password}
+                placeholder="Enter your password"
+              />
+              {errors.password && (
+                <Text style={styles.errorMessage}>{errors.password}</Text>
+              )}
+              <View style={styles.logInBtn}>
+                <Button
+                  title="Submit"
+                  onPress={handleSubmit}
+                  disabled={!isValid}
+                  accessibilityLabel="Learn more about this purple button"
+                />
+              </View>
+            </View>
+          )}
+        </Formik>
       </ScrollView>
     </SafeAreaView>
   );
@@ -94,19 +102,21 @@ const styles = StyleSheet.create({
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
+    fontSize: 26,
+    textAlign: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  logInBtn: {
+    marginTop: 52,
+    marginLeft: 12,
+    marginRight: 12,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
-  highlight: {
-    fontWeight: '700',
-  },
+  errorMessage: {fontSize: 10, color: 'red', marginLeft: 12},
 });
 
 export default App;
